@@ -87,13 +87,13 @@ namespace UI.Main
             label.text = $"{MAX_STRENGTH} 100%";
 
             var slider = Create<Slider>();
-            slider.lowValue = 0;
-            slider.highValue = 100;
+            slider.lowValue = 0f;
+            slider.highValue = 100f;
             if (Application.isPlaying)
             {
                 slider.RegisterValueChangedCallback(evt =>
                 {
-                    _intiface.HapticStrength = evt.newValue;
+                    _intiface.HapticStrength = evt.newValue / 100f;
                     label.text = $"{MAX_STRENGTH} {Mathf.RoundToInt(evt.newValue)}%";
                 });
                 slider.value = 100;
