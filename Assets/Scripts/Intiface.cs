@@ -19,14 +19,19 @@ public class Intiface : MonoBehaviour
     public List<ButtplugClientDevice> Devices { get; } = new List<ButtplugClientDevice>();
 
 
+    public Action IntifaceDisabled;
+
     public float HapticStrength { get; set; }
 
 
-    private async void Start()
+    private void Awake()
     {
         Intensity = 0f;
         HapticStrength = 1.0f;
-        
+    }
+
+    private async void OnEnable()
+    {
         _client = new ButtplugClient("Metronome");
         Log("Trying to create client");
 
@@ -34,15 +39,31 @@ public class Intiface : MonoBehaviour
         _client.DeviceAdded += AddDevice;
         _client.DeviceRemoved += RemoveDevice;
         _client.ScanningFinished += ScanFinished;
+        _client.PingTimeout += TimeOut;
 
         // Creating a Websocket Connector is as easy as using the right
         // options object.
         var connector = new ButtplugWebsocketConnector(new Uri("ws://localhost:12345/buttplug"));
-        await _client.ConnectAsync(connector);
-        await _client.StartScanningAsync();
+
+        try
+        {
+            await _client.ConnectAsync(connector);
+            await _client.StartScanningAsync();
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError(exception);
+            enabled = false;
+        }
     }
 
-    private async void OnDestroy()
+    private void TimeOut(object sender, EventArgs e)
+    {
+        Log($"TimeOut");
+        enabled = false;
+    }
+
+    private async void OnDisable()
     {
         Devices.Clear();
 
@@ -53,11 +74,13 @@ public class Intiface : MonoBehaviour
             _client.DeviceAdded -= AddDevice;
             _client.DeviceRemoved -= RemoveDevice;
             _client.ScanningFinished -= ScanFinished;
+            _client.PingTimeout -= TimeOut;
             await _client.DisconnectAsync();
             _client.Dispose();
             _client = null;
         }
 
+        IntifaceDisabled?.Invoke();
         Log("I am destroyed now");
     }
 
