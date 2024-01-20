@@ -22,11 +22,16 @@ namespace UI.Main
         private const string METRONOME = "<b>METRONOME</b>";
         private const string HAPTICS = "<b>HAPTICS</b>";
         private const string HAPTICS_TOGGLE = "Toggle haptics";
+        private const string ALTERNATE_HAPTICS = "Alternate devices";
         private const string MAX_STRENGTH = "Max strength";
+        private const string DURATION = "Duration";
         private const string ALTERNATE_SIDES = "Alternate left/right";
 
 
         private VisualElement _hapticsStrengthSetting;
+        private VisualElement _hapticsDurationSlider;
+        private VisualElement _hapticsAlternateDevices;
+        private bool _devicesChanged;
 
         private void Start()
         {
@@ -76,6 +81,8 @@ namespace UI.Main
             var hapticsContainer = Create(SETTINGS_CONTAINER);
             CreateHapticsToggle(hapticsContainer);
             _hapticsStrengthSetting = CreateHapticsStrengthSlider();
+            _hapticsDurationSlider = CreateHapticsDurationSlider();
+            _hapticsAlternateDevices = CreateAlternateDevicesToggle();
             content.Add(hapticsContainer);
         }
 
@@ -97,6 +104,32 @@ namespace UI.Main
                     label.text = $"{MAX_STRENGTH} {Mathf.RoundToInt(evt.newValue)}%";
                 });
                 slider.value = 100;
+                _intiface.HapticStrength = 1f;
+            }
+
+            container.Add(label);
+            container.Add(slider);
+            return container;
+        }
+
+        private VisualElement CreateHapticsDurationSlider()
+        {
+            var container = Create(SLIDER_CONTAINER);
+            var label = Create<Label>();
+            label.text = $"{DURATION} 300ms";
+
+            var slider = Create<Slider>();
+            slider.lowValue = 200f;
+            slider.highValue = 1000f;
+            if (Application.isPlaying)
+            {
+                slider.RegisterValueChangedCallback(evt =>
+                {
+                    _metronome.HapticDuration = evt.newValue / 1000f;
+                    label.text = $"{DURATION} {Mathf.RoundToInt(evt.newValue)}ms";
+                });
+                slider.value = 300;
+                _metronome.HapticDuration = 0.3f;
             }
 
             container.Add(label);
@@ -121,6 +154,7 @@ namespace UI.Main
                     label.text = $"{Mathf.RoundToInt(evt.newValue)} {BEATS_PER_MINUTE}";
                 });
                 slider.value = 60;
+                _metronome.BeatsPerMinute = 60;
             }
 
             container.Add(label);
@@ -165,6 +199,7 @@ namespace UI.Main
                     }
                 });
                 slider.value = 3;
+                _metronome.DingEveryNth = 3;
             }
 
             container.Add(label);
@@ -188,8 +223,8 @@ namespace UI.Main
             {
                 toggle.RegisterCallback<ClickEvent>(evt =>
                 {
-                    bool isOn = !_metronome._alternateEars;
-                    _metronome._alternateEars = isOn;
+                    bool isOn = !_metronome.AlternateEars;
+                    _metronome.AlternateEars = isOn;
                     UpdateToggleVisuals(toggle, slider, isOn);
                 });
             }
@@ -197,6 +232,33 @@ namespace UI.Main
             container.Add(label);
             container.Add(toggle);
             content.Add(container);
+        }
+
+        private VisualElement CreateAlternateDevicesToggle()
+        {
+            // Label
+            var container = Create(TOGGLE_CONTAINER);
+            var label = Create<Label>();
+            label.text = ALTERNATE_HAPTICS;
+
+            // Toggle
+            var toggle = Create(TOGGLE, TOGGLE_OFF);
+            var slider = Create(TOGGLE_SLIDER);
+            toggle.Add(slider);
+
+            if (Application.isPlaying)
+            {
+                toggle.RegisterCallback<ClickEvent>(evt =>
+                {
+                    bool isOn = !_metronome.AlternateDevices;
+                    _metronome.AlternateDevices = isOn;
+                    UpdateToggleVisuals(toggle, slider, isOn);
+                });
+            }
+
+            container.Add(label);
+            container.Add(toggle);
+            return container;
         }
 
         private void CreateHapticsToggle(VisualElement content)
@@ -222,12 +284,18 @@ namespace UI.Main
                     if (isOn)
                     {
                         content.Add(_hapticsStrengthSetting);
+                        content.Add(_hapticsDurationSlider);
+                        content.Add(_hapticsAlternateDevices);
                     }
-                    else if (content.Contains(_hapticsStrengthSetting))
+                    else
                     {
                         content.Remove(_hapticsStrengthSetting);
+                        content.Remove(_hapticsDurationSlider);
+                        content.Remove(_hapticsAlternateDevices);
                     }
                 });
+
+                _intiface.DevicesChanged += () => { _devicesChanged = true; };
 
                 _intiface.IntifaceDisabled += () =>
                 {
@@ -235,6 +303,16 @@ namespace UI.Main
                     if (content.Contains(_hapticsStrengthSetting))
                     {
                         content.Remove(_hapticsStrengthSetting);
+                    }
+
+                    if (content.Contains(_hapticsDurationSlider))
+                    {
+                        content.Remove(_hapticsDurationSlider);
+                    }
+
+                    if (content.Contains(_hapticsAlternateDevices))
+                    {
+                        content.Remove(_hapticsAlternateDevices);
                     }
                 };
             }

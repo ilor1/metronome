@@ -5,7 +5,6 @@
 // your scene and it'll run on scene load.
 
 using System;
-using System.Collections.Generic;
 using Buttplug.Client;
 using Buttplug.Client.Connectors.WebsocketConnector;
 using Unity.Mathematics;
@@ -13,33 +12,28 @@ using UnityEngine;
 
 public class Intiface : MonoBehaviour
 {
-    public float Intensity;
-    private ButtplugClient _client;
+    public ButtplugClient Client;
 
-    public List<ButtplugClientDevice> Devices { get; } = new List<ButtplugClientDevice>();
+    //public List<ButtplugClientDevice> Devices { get; } = new List<ButtplugClientDevice>();
 
+  
 
     public Action IntifaceDisabled;
+    public Action DevicesChanged;
 
     public float HapticStrength { get; set; }
 
 
-    private void Awake()
-    {
-        Intensity = 0f;
-        HapticStrength = 1.0f;
-    }
-
     private async void OnEnable()
     {
-        _client = new ButtplugClient("Metronome");
+        Client = new ButtplugClient("Metronome");
         Log("Trying to create client");
 
         // Set up client event handlers before we connect.
-        _client.DeviceAdded += AddDevice;
-        _client.DeviceRemoved += RemoveDevice;
-        _client.ScanningFinished += ScanFinished;
-        _client.PingTimeout += TimeOut;
+        Client.DeviceAdded += AddDevice;
+        Client.DeviceRemoved += RemoveDevice;
+        Client.ScanningFinished += ScanFinished;
+        Client.PingTimeout += TimeOut;
 
         // Creating a Websocket Connector is as easy as using the right
         // options object.
@@ -47,8 +41,8 @@ public class Intiface : MonoBehaviour
 
         try
         {
-            await _client.ConnectAsync(connector);
-            await _client.StartScanningAsync();
+            await Client.ConnectAsync(connector);
+            await Client.StartScanningAsync();
         }
         catch (Exception exception)
         {
@@ -65,73 +59,57 @@ public class Intiface : MonoBehaviour
 
     private async void OnDisable()
     {
-        Devices.Clear();
+        //Devices.Clear();
 
         // On object shutdown, disconnect the client and just kill the server
         // process. Server process shutdown will be cleaner in future builds.
-        if (_client != null)
+        if (Client != null)
         {
-            _client.DeviceAdded -= AddDevice;
-            _client.DeviceRemoved -= RemoveDevice;
-            _client.ScanningFinished -= ScanFinished;
-            _client.PingTimeout -= TimeOut;
-            await _client.DisconnectAsync();
-            _client.Dispose();
-            _client = null;
+            Client.DeviceAdded -= AddDevice;
+            Client.DeviceRemoved -= RemoveDevice;
+            Client.ScanningFinished -= ScanFinished;
+            Client.PingTimeout -= TimeOut;
+            await Client.DisconnectAsync();
+            Client.Dispose();
+            Client = null;
         }
 
         IntifaceDisabled?.Invoke();
         Log("I am destroyed now");
     }
 
-    private void OnValidate()
-    {
-        UpdateDevices();
-    }
 
-    public void UpdateDevices()
+    public void UpdateDevice(ButtplugClientDevice device, float intensity)
     {
-        float speed = Intensity > 0.001f ? math.max(Intensity * HapticStrength, 0.05f) : 0f;
-
-        // Debug.Log($"Intiface speed:{_intensity}, adjusted speed:{speed}");
-        foreach (ButtplugClientDevice device in Devices)
+        float speed = intensity > 0.001f ? math.max(intensity * HapticStrength, 0.05f) : 0f;
+        if (device.VibrateAttributes.Count > 0)
         {
-            // if (device.LinearAttributes.Count > 0)
-            // {
-            //     uint duration = 1500;
-            //     device.LinearAsync(duration, speed);
-            // }
+            device.VibrateAsync(speed);
+        }
 
-            if (device.VibrateAttributes.Count > 0)
-            {
-                device.VibrateAsync(speed);
-            }
+        if (device.OscillateAttributes.Count > 0)
+        {
+            device.OscillateAsync(speed);
+        }
 
-            if (device.OscillateAttributes.Count > 0)
-            {
-                device.OscillateAsync(speed);
-            }
-
-            if (device.RotateAttributes.Count > 0)
-            {
-                device.RotateAsync(speed, true);
-            }
+        if (device.RotateAttributes.Count > 0)
+        {
+            device.RotateAsync(speed, true);
         }
     }
-
+    
     private void AddDevice(object sender, DeviceAddedEventArgs e)
     {
         Log($"Device {e.Device.Name} Connected!");
-        Devices.Add(e.Device);
-        UpdateDevices();
+        //Devices.Add(e.Device);
     }
 
     private void RemoveDevice(object sender, DeviceRemovedEventArgs e)
     {
         Log($"Device {e.Device.Name} Removed!");
-        Devices.Remove(e.Device);
-        UpdateDevices();
+        //Devices.Remove(e.Device);
     }
+
 
     private void ScanFinished(object sender, EventArgs e)
     {

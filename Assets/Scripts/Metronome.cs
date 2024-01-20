@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 
 public class Metronome : MonoBehaviour
@@ -11,18 +12,20 @@ public class Metronome : MonoBehaviour
     [SerializeField] private AudioClip _sfxTok;
     [SerializeField] private AudioClip _sfxDing;
 
-    [Tooltip("Beats per Minute(bpm)")] public float BeatsPerMinute { get; set; }
-    [Tooltip("Bell sound every Nth")] public float DingEveryNth { get; set; }
+    public float BeatsPerMinute { get; set; }
+    public float DingEveryNth { get; set; }
 
-    [Tooltip("Alternate sounds on left/right")]
-    public bool _alternateEars { get; set; }
+    public bool AlternateEars { get; set; }
+
+    public float HapticDuration { get; set; }
+
+    public bool AlternateDevices { get; set; }
+    private bool _pairedDevice = false;
 
     [SerializeField] private AudioSource _audioSourceCenter;
     [SerializeField] private AudioSource _audioSourceLeft;
     [SerializeField] private AudioSource _audioSourceRight;
 
-
-    [SerializeField] private float _hapticDuration = 0.1f;
 
     private bool _playOnleft = true;
     private float _timeSinceLastPlay;
@@ -32,8 +35,6 @@ public class Metronome : MonoBehaviour
     private void Start()
     {
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
-        BeatsPerMinute = 60;
-        DingEveryNth = 3;
     }
 
     private void Update()
@@ -42,33 +43,49 @@ public class Metronome : MonoBehaviour
 
         _timeSinceLastPlay += Time.deltaTime;
 
+        // PlaySound at intervals
         if (_timeSinceLastPlay >= timeInterval)
         {
             _timeSinceLastPlay = 0.0f;
             PlaySound();
-            SetHaptic(1.0f);
+            _pairedDevice = !_pairedDevice;
         }
-        else if (_timeSinceLastPlay > _hapticDuration)
+
+        if (_intiface.Client != null)
         {
-            // Reduce haptic to 0, between beats
-            float value = timeInterval * 0.5f - _timeSinceLastPlay;
-            value = math.clamp(value, 0, 1);
-            SetHaptic(value);
+            float intensityPaired = 0f;
+            float intensityUnpaired = 0f;
+            if (_timeSinceLastPlay > HapticDuration)
+            {
+                intensityPaired = 0f;
+                intensityUnpaired = 0f;
+            }
+            else
+            {
+                intensityPaired = _pairedDevice ? 1f : 0;
+                intensityUnpaired = _pairedDevice ? 0f : 1f;
+            }
+
+            for (int i = 0; i < _intiface.Client.Devices.Length; i++)
+            {
+                float intensity = math.max(intensityPaired, intensityUnpaired);
+                if (AlternateDevices)
+                {
+                    intensity = i % 2 == 0 ? intensityPaired : intensityUnpaired;
+                }
+
+                var device = _intiface.Client.Devices[i];
+                _intiface.UpdateDevice(device, intensity);
+            }
         }
     }
-
-    private void SetHaptic(float value)
-    {
-        _intiface.Intensity = value;
-        _intiface.UpdateDevices();
-    }
-
+    
     private void PlaySound()
     {
         int nth = Mathf.RoundToInt(DingEveryNth);
         if (nth > 0 && _toksPlayed >= nth - 1)
         {
-            if (_alternateEars)
+            if (AlternateEars)
             {
                 if (_playOnleft)
                 {
@@ -90,7 +107,7 @@ public class Metronome : MonoBehaviour
         }
         else
         {
-            if (_alternateEars)
+            if (AlternateEars)
             {
                 if (_playOnleft)
                 {
