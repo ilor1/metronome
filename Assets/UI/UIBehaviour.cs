@@ -20,6 +20,8 @@ namespace UI
         protected const string TOGGLE_OFF = "toggle-off";
         protected const string TOGGLE_SLIDER = "toggle-slider";
 
+        protected const string QUIT_BUTTON = "quit-button";
+        
         protected VisualElement Create(params string[] classNames)
         {
             return Create<VisualElement>(classNames);

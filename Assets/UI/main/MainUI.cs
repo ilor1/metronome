@@ -49,8 +49,9 @@ namespace UI.Main
             // Create Root
             yield return null;
             var root = _document.rootVisualElement;
-            root.Clear();
             root.AddToClassList(ROOT);
+            root.Clear();
+
             foreach (var styleSheet in _styleSheets)
             {
                 root.styleSheets.Add(styleSheet);
@@ -61,8 +62,8 @@ namespace UI.Main
             // title.text = TITLE;
             // header.Add(title);
             // root.Add(header);
-
-            var content = Create(CONTENT);
+            
+            var content = Create<ScrollView>(CONTENT);
             root.Add(content);
 
             var metronomeLabel = Create<Label>();
@@ -83,7 +84,28 @@ namespace UI.Main
             _hapticsStrengthSetting = CreateHapticsStrengthSlider();
             _hapticsDurationSlider = CreateHapticsDurationSlider();
             _hapticsAlternateDevices = CreateAlternateDevicesToggle();
+
+
             content.Add(hapticsContainer);
+
+
+            var quitButton = Create<Button>(QUIT_BUTTON);
+            quitButton.text = "Exit";
+            quitButton.clicked += () => { StartCoroutine(Quit()); };
+            content.Add(quitButton);
+        }
+
+
+        private IEnumerator Quit()
+        {
+            _intiface.enabled = false;
+            yield return new WaitForSeconds(0.5f);
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
 
 
