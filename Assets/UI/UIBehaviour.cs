@@ -11,17 +11,17 @@ namespace UI
         protected const string CONTENT = "content";
 
         protected const string SETTINGS_CONTAINER = "settings-container";
-        
+
         protected const string SLIDER_CONTAINER = "slider-container";
-        
+
         protected const string TOGGLE_CONTAINER = "toggle-container";
         protected const string TOGGLE = "toggle";
         protected const string TOGGLE_ON = "toggle-on";
         protected const string TOGGLE_OFF = "toggle-off";
         protected const string TOGGLE_SLIDER = "toggle-slider";
-
-        protected const string QUIT_BUTTON = "quit-button";
         
+        protected const string QUIT_BUTTON = "quit-button";
+
         protected VisualElement Create(params string[] classNames)
         {
             return Create<VisualElement>(classNames);

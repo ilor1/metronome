@@ -20,18 +20,19 @@ namespace UI.Main
         private const string TITLE = "Metronome";
         private const string BEATS_PER_MINUTE = "beats/min";
         private const string METRONOME = "<b>METRONOME</b>";
+        private const string ALTERNATE_SIDES = "Alternate left/right";
+        
         private const string HAPTICS = "<b>HAPTICS</b>";
         private const string HAPTICS_TOGGLE = "Toggle haptics";
         private const string ALTERNATE_HAPTICS = "Alternate devices";
         private const string MAX_STRENGTH = "Max strength";
         private const string DURATION = "Duration";
-        private const string ALTERNATE_SIDES = "Alternate left/right";
-
+       
+        private const string CREDITS = "<b>CREDITS</b>";
 
         private VisualElement _hapticsStrengthSetting;
         private VisualElement _hapticsDurationSlider;
         private VisualElement _hapticsAlternateDevices;
-        private bool _devicesChanged;
 
         private void Start()
         {
@@ -62,20 +63,21 @@ namespace UI.Main
             // title.text = TITLE;
             // header.Add(title);
             // root.Add(header);
-            
+
             var content = Create<ScrollView>(CONTENT);
             root.Add(content);
 
+            // Metronome
             var metronomeLabel = Create<Label>();
             metronomeLabel.text = METRONOME;
             content.Add(metronomeLabel);
-
             var beatsContainer = Create(SETTINGS_CONTAINER);
             CreateBPMSlider(beatsContainer);
             CreateDingSlider(beatsContainer);
             CreateAlternateSidesToggle(beatsContainer);
             content.Add(beatsContainer);
 
+            // Haptics
             var hapticsLabel = Create<Label>();
             hapticsLabel.text = HAPTICS;
             content.Add(hapticsLabel);
@@ -84,15 +86,29 @@ namespace UI.Main
             _hapticsStrengthSetting = CreateHapticsStrengthSlider();
             _hapticsDurationSlider = CreateHapticsDurationSlider();
             _hapticsAlternateDevices = CreateAlternateDevicesToggle();
-
-
             content.Add(hapticsContainer);
 
-
+            // Credits
+            // var creditsLabel = Create<Label>();
+            // creditsLabel.text = CREDITS;
+            // content.Add(creditsLabel);
+            // var creditsContainer = Create(SETTINGS_CONTAINER);
+            // var intifaceCredits = Create<Label>("credits");
+            // intifaceCredits.text = "Special thanks to \nNonpolynomial for Intiface\u00ae Central.";
+            // creditsContainer.Add(intifaceCredits);
+            // content.Add(creditsContainer);
+            
+            // Quit
             var quitButton = Create<Button>(QUIT_BUTTON);
             quitButton.text = "Exit";
             quitButton.clicked += () => { StartCoroutine(Quit()); };
             content.Add(quitButton);
+            
+            
+            // Credits
+            var intifaceCredits = Create<Label>("credits");
+            intifaceCredits.text = "Special thanks to\n<b><color=white>Intiface\u00ae Central</color></b> by <b><color=white>Nonpolynomial</color></b>\nfor the haptics support.";
+            content.Add(intifaceCredits);
         }
 
 
@@ -316,8 +332,6 @@ namespace UI.Main
                         content.Remove(_hapticsAlternateDevices);
                     }
                 });
-
-                _intiface.DevicesChanged += () => { _devicesChanged = true; };
 
                 _intiface.IntifaceDisabled += () =>
                 {

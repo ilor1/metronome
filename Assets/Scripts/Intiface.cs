@@ -13,13 +13,7 @@ using UnityEngine;
 public class Intiface : MonoBehaviour
 {
     public ButtplugClient Client;
-
-    //public List<ButtplugClientDevice> Devices { get; } = new List<ButtplugClientDevice>();
-
-  
-
     public Action IntifaceDisabled;
-    public Action DevicesChanged;
 
     public float HapticStrength { get; set; }
 
@@ -101,13 +95,11 @@ public class Intiface : MonoBehaviour
     private void AddDevice(object sender, DeviceAddedEventArgs e)
     {
         Log($"Device {e.Device.Name} Connected!");
-        //Devices.Add(e.Device);
     }
 
     private void RemoveDevice(object sender, DeviceRemovedEventArgs e)
     {
         Log($"Device {e.Device.Name} Removed!");
-        //Devices.Remove(e.Device);
     }
 
 
