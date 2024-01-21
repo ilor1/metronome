@@ -1,3 +1,4 @@
+using System;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -26,6 +27,13 @@ public class Metronome : MonoBehaviour
     private float _timeSinceLastPlay;
     private int _toksPlayed = 0;
 
+    public float Volume { get; set; }
+
+
+    private void Awake()
+    {
+        Volume = 1.0f;
+    }
 
     private void Start()
     {
@@ -34,6 +42,11 @@ public class Metronome : MonoBehaviour
 
     private void Update()
     {
+        // Set volume
+        _audioSourceCenter.volume = Volume;
+        _audioSourceLeft.volume = Volume;
+        _audioSourceRight.volume = Volume;
+        
         float timeInterval = 60f / BeatsPerMinute;
 
         _timeSinceLastPlay += Time.deltaTime;

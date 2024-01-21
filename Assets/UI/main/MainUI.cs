@@ -15,21 +15,41 @@ namespace UI.Main
 
         [SerializeField] private Intiface _intiface;
         [SerializeField] private Metronome _metronome;
+        [SerializeField] private SineWaveExample _binaurals;
 
         // Texts
         private const string TITLE = "Metronome";
-        private const string BEATS_PER_MINUTE = "beats/min";
+
         private const string METRONOME = "<b>METRONOME</b>";
+        private const string BEATS_PER_MINUTE = "beats/min";
+        private const string METRONOME_TOGGLE = "Toggle metronome";
         private const string ALTERNATE_SIDES = "Alternate left/right";
-        
+
+        private const string BINAURAL = "<b>BINAURALS</b>";
+        private const string BINAURAL_TOGGLE = "Toggle binaurals";
+
+
         private const string HAPTICS = "<b>HAPTICS</b>";
         private const string HAPTICS_TOGGLE = "Toggle haptics";
         private const string ALTERNATE_HAPTICS = "Alternate devices";
         private const string MAX_STRENGTH = "Max strength";
         private const string DURATION = "Duration";
-       
+
         private const string CREDITS = "<b>CREDITS</b>";
 
+        // Metronome
+        private VisualElement _metronomeVolumeSlider;
+        private VisualElement _bpmSlider;
+        private VisualElement _dingSlider;
+        private VisualElement _sidesToggle;
+
+        // Binaurals
+        private VisualElement _binauralsVolumeSlider;
+        private VisualElement _baseFrequency;
+        private VisualElement _beatFrequency;
+        private VisualElement _spinSpeed;
+
+        // Haptics
         private VisualElement _hapticsStrengthSetting;
         private VisualElement _hapticsDurationSlider;
         private VisualElement _hapticsAlternateDevices;
@@ -71,43 +91,47 @@ namespace UI.Main
             var metronomeLabel = Create<Label>();
             metronomeLabel.text = METRONOME;
             content.Add(metronomeLabel);
-            var beatsContainer = Create(SETTINGS_CONTAINER);
-            CreateBPMSlider(beatsContainer);
-            CreateDingSlider(beatsContainer);
-            CreateAlternateSidesToggle(beatsContainer);
-            content.Add(beatsContainer);
+            var metronomeContainer = Create(SETTINGS_CONTAINER);
+            _metronomeVolumeSlider = CreateMetronomeVolumeSlider();
+            _bpmSlider = CreateBPMSlider();
+            _dingSlider = CreateDingSlider();
+            _sidesToggle = CreateAlternateSidesToggle();
+            CreateMetronomeToggle(metronomeContainer);
+            content.Add(metronomeContainer);
+
+            // Binaurals
+            var binauralLabel = Create<Label>();
+            binauralLabel.text = BINAURAL;
+            content.Add(binauralLabel);
+            var binauralContainer = Create(SETTINGS_CONTAINER);
+            _binauralsVolumeSlider = CreateBinauralsVolumeSlider();
+            _beatFrequency = CreateBeatFrequencySlider();
+            _baseFrequency = CreateBaseFrequencySlider();
+            _spinSpeed = CreateSpinSpeedSlider();
+            CreateBinauralsToggle(binauralContainer);
+            content.Add(binauralContainer);
 
             // Haptics
             var hapticsLabel = Create<Label>();
             hapticsLabel.text = HAPTICS;
             content.Add(hapticsLabel);
             var hapticsContainer = Create(SETTINGS_CONTAINER);
-            CreateHapticsToggle(hapticsContainer);
             _hapticsStrengthSetting = CreateHapticsStrengthSlider();
             _hapticsDurationSlider = CreateHapticsDurationSlider();
             _hapticsAlternateDevices = CreateAlternateDevicesToggle();
+            CreateHapticsToggle(hapticsContainer);
             content.Add(hapticsContainer);
 
-            // Credits
-            // var creditsLabel = Create<Label>();
-            // creditsLabel.text = CREDITS;
-            // content.Add(creditsLabel);
-            // var creditsContainer = Create(SETTINGS_CONTAINER);
-            // var intifaceCredits = Create<Label>("credits");
-            // intifaceCredits.text = "Special thanks to \nNonpolynomial for Intiface\u00ae Central.";
-            // creditsContainer.Add(intifaceCredits);
-            // content.Add(creditsContainer);
-            
             // Quit
             var quitButton = Create<Button>(QUIT_BUTTON);
             quitButton.text = "Exit";
             quitButton.clicked += () => { StartCoroutine(Quit()); };
             content.Add(quitButton);
-            
-            
+
             // Credits
             var intifaceCredits = Create<Label>("credits");
-            intifaceCredits.text = "Special thanks to\n<b><color=white>Intiface\u00ae Central</color></b> by <b><color=white>Nonpolynomial</color></b>\nfor the haptics support.";
+            intifaceCredits.text =
+                "Special thanks to\n<b><color=white>Intiface\u00ae Central</color></b> by <b><color=white>Nonpolynomial</color></b>\nfor the haptics support.";
             content.Add(intifaceCredits);
         }
 
@@ -150,6 +174,132 @@ namespace UI.Main
             return container;
         }
 
+        private VisualElement CreateSpinSpeedSlider()
+        {
+            var container = Create(SLIDER_CONTAINER);
+            var label = Create<Label>();
+            label.text = $"Spin speed 1";
+
+            var slider = Create<Slider>();
+            slider.lowValue = 0;
+            slider.highValue = 5;
+            if (Application.isPlaying)
+            {
+                slider.RegisterValueChangedCallback(evt =>
+                {
+                    _binaurals.SpinSpeed = evt.newValue;
+                    label.text = $"Spin speed {Mathf.RoundToInt(evt.newValue)}";
+                });
+                slider.value = 1;
+                _binaurals.SpinSpeed = 1;
+            }
+
+            container.Add(label);
+            container.Add(slider);
+            return container;
+        }
+        
+        private VisualElement CreateMetronomeVolumeSlider()
+        {
+            var container = Create(SLIDER_CONTAINER);
+            var label = Create<Label>();
+            label.text = $"Volume 50%";
+
+            var slider = Create<Slider>();
+            slider.lowValue = 0;
+            slider.highValue = 100;
+            if (Application.isPlaying)
+            {
+                slider.RegisterValueChangedCallback(evt =>
+                {
+                    _metronome.Volume = evt.newValue / 100f;
+                    label.text = $"Volume {Mathf.RoundToInt(evt.newValue)}%";
+                });
+                slider.value = 50;
+                _binaurals.Volume = 0.5f;
+            }
+
+            container.Add(label);
+            container.Add(slider);
+            return container;
+        }
+        
+        private VisualElement CreateBinauralsVolumeSlider()
+        {
+            var container = Create(SLIDER_CONTAINER);
+            var label = Create<Label>();
+            label.text = $"Volume 50%";
+
+            var slider = Create<Slider>();
+            slider.lowValue = 0;
+            slider.highValue = 100;
+            if (Application.isPlaying)
+            {
+                slider.RegisterValueChangedCallback(evt =>
+                {
+                    _binaurals.Volume = evt.newValue / 100f;
+                    label.text = $"Volume {Mathf.RoundToInt(evt.newValue)}%";
+                });
+                slider.value = 50;
+                _binaurals.Volume = 0.5f;
+            }
+
+            container.Add(label);
+            container.Add(slider);
+            return container;
+        }
+
+        private VisualElement CreateBaseFrequencySlider()
+        {
+            var container = Create(SLIDER_CONTAINER);
+            var label = Create<Label>();
+            label.text = $"Base frequency 100Hz";
+        
+            var slider = Create<Slider>();
+            slider.lowValue = 1;
+            slider.highValue = 250;
+            if (Application.isPlaying)
+            {
+                slider.RegisterValueChangedCallback(evt =>
+                {
+                    _binaurals.baseFrequency = evt.newValue;
+                    label.text = $"Base frequency {Mathf.RoundToInt(evt.newValue)}Hz";
+                });
+                slider.value = 100;
+                _binaurals.baseFrequency = 100;
+            }
+        
+            container.Add(label);
+            container.Add(slider);
+            return container;
+        }
+        
+        private VisualElement CreateBeatFrequencySlider()
+        {
+            var container = Create(SLIDER_CONTAINER);
+            var label = Create<Label>();
+            label.text = $"Beat frequency 5Hz";
+        
+            var slider = Create<Slider>();
+            slider.lowValue = 1;
+            slider.highValue = 30;
+            if (Application.isPlaying)
+            {
+                slider.RegisterValueChangedCallback(evt =>
+                {
+                    _binaurals.beatFrequency = evt.newValue;
+                    label.text = $"Beat frequency {Mathf.RoundToInt(evt.newValue)}Hz";
+                });
+                slider.value = 5;
+                _binaurals.beatFrequency = 5;
+            }
+        
+            container.Add(label);
+            container.Add(slider);
+            return container;
+        }
+
+
         private VisualElement CreateHapticsDurationSlider()
         {
             var container = Create(SLIDER_CONTAINER);
@@ -175,7 +325,7 @@ namespace UI.Main
             return container;
         }
 
-        private void CreateBPMSlider(VisualElement content)
+        private VisualElement CreateBPMSlider()
         {
             var container = Create(SLIDER_CONTAINER);
             var label = Create<Label>();
@@ -197,10 +347,10 @@ namespace UI.Main
 
             container.Add(label);
             container.Add(slider);
-            content.Add(container);
+            return container;
         }
 
-        private void CreateDingSlider(VisualElement content)
+        private VisualElement CreateDingSlider()
         {
             var container = Create(SLIDER_CONTAINER);
             var label = Create<Label>();
@@ -242,10 +392,10 @@ namespace UI.Main
 
             container.Add(label);
             container.Add(slider);
-            content.Add(container);
+            return container;
         }
 
-        private void CreateAlternateSidesToggle(VisualElement content)
+        private VisualElement CreateAlternateSidesToggle()
         {
             // Label
             var container = Create(TOGGLE_CONTAINER);
@@ -269,7 +419,7 @@ namespace UI.Main
 
             container.Add(label);
             container.Add(toggle);
-            content.Add(container);
+            return container;
         }
 
         private VisualElement CreateAlternateDevicesToggle()
@@ -297,6 +447,138 @@ namespace UI.Main
             container.Add(label);
             container.Add(toggle);
             return container;
+        }
+
+        private void CreateMetronomeToggle(VisualElement content)
+        {
+            // Toggle Label
+            var container = Create(TOGGLE_CONTAINER);
+            var label = Create<Label>();
+            label.text = METRONOME_TOGGLE;
+
+            // Toggle
+            var toggle = Create(TOGGLE, TOGGLE_OFF);
+            var slider = Create(TOGGLE_SLIDER);
+            toggle.Add(slider);
+
+            if (Application.isPlaying)
+            {
+                toggle.RegisterCallback<ClickEvent>(evt =>
+                {
+                    bool isOn = !_metronome.enabled;
+                    _metronome.enabled = isOn;
+                    UpdateToggleVisuals(toggle, slider, isOn);
+
+                    if (isOn)
+                    {
+                        content.Add(_metronomeVolumeSlider);
+                        content.Add(_bpmSlider);
+                        content.Add(_dingSlider);
+                        content.Add(_sidesToggle);
+                    }
+                    else
+                    {
+                        if (content.Contains(_metronomeVolumeSlider))
+                        {
+                            content.Remove(_metronomeVolumeSlider);
+                        }
+                        
+                        if (content.Contains(_bpmSlider))
+                        {
+                            content.Remove(_bpmSlider);
+                        }
+
+                        if (content.Contains(_dingSlider))
+                        {
+                            content.Remove(_dingSlider);
+                        }
+
+                        if (content.Contains(_sidesToggle))
+                        {
+                            content.Remove(_sidesToggle);
+                        }
+                    }
+                });
+            }
+
+            container.Add(label);
+            container.Add(toggle);
+            content.Add(container);
+
+            if (_metronome.enabled)
+            {
+                content.Add(_metronomeVolumeSlider);
+                content.Add(_bpmSlider);
+                content.Add(_dingSlider);
+                content.Add(_sidesToggle);
+                UpdateToggleVisuals(toggle, slider, true);
+            }
+        }
+
+        private void CreateBinauralsToggle(VisualElement content)
+        {
+            // Toggle Label
+            var container = Create(TOGGLE_CONTAINER);
+            var label = Create<Label>();
+            label.text = BINAURAL_TOGGLE;
+
+            // Toggle
+            var toggle = Create(TOGGLE, TOGGLE_OFF);
+            var slider = Create(TOGGLE_SLIDER);
+            toggle.Add(slider);
+
+            if (Application.isPlaying)
+            {
+                toggle.RegisterCallback<ClickEvent>(evt =>
+                {
+                    bool isOn = !_binaurals.enabled;
+                    _binaurals.enabled = isOn;
+                    UpdateToggleVisuals(toggle, slider, isOn);
+
+                    if (isOn)
+                    {
+                        content.Add(_binauralsVolumeSlider);
+                        content.Add(_beatFrequency);
+                        content.Add(_baseFrequency);
+                        content.Add(_spinSpeed);
+                    }
+                    else
+                    {
+                        if (content.Contains(_binauralsVolumeSlider))
+                        {
+                            content.Remove(_binauralsVolumeSlider);
+                        }
+
+                        if (content.Contains(_beatFrequency))
+                        {
+                            content.Remove(_beatFrequency);
+                        }
+                        
+                        if (content.Contains(_baseFrequency))
+                        {
+                            content.Remove(_baseFrequency);
+                        }
+
+                        if (content.Contains(_spinSpeed))
+                        {
+                            content.Remove(_spinSpeed);
+                        }
+                    }
+                });
+            }
+
+            content.Add(container);
+            container.Add(label);
+            container.Add(toggle);
+
+            if (_binaurals.enabled)
+            {
+                content.Add(_binauralsVolumeSlider);
+                content.Add(_beatFrequency);
+                content.Add(_baseFrequency);
+                content.Add(_spinSpeed);
+                UpdateToggleVisuals(toggle, slider, true);
+            }
         }
 
         private void CreateHapticsToggle(VisualElement content)
@@ -327,9 +609,20 @@ namespace UI.Main
                     }
                     else
                     {
-                        content.Remove(_hapticsStrengthSetting);
-                        content.Remove(_hapticsDurationSlider);
-                        content.Remove(_hapticsAlternateDevices);
+                        if (content.Contains(_hapticsStrengthSetting))
+                        {
+                            content.Remove(_hapticsStrengthSetting);
+                        }
+
+                        if (content.Contains(_hapticsDurationSlider))
+                        {
+                            content.Remove(_hapticsDurationSlider);
+                        }
+
+                        if (content.Contains(_hapticsAlternateDevices))
+                        {
+                            content.Remove(_hapticsAlternateDevices);
+                        }
                     }
                 });
 
@@ -356,6 +649,14 @@ namespace UI.Main
             container.Add(label);
             container.Add(toggle);
             content.Add(container);
+
+            if (_intiface.enabled)
+            {
+                content.Add(_hapticsStrengthSetting);
+                content.Add(_hapticsDurationSlider);
+                content.Add(_hapticsAlternateDevices);
+                UpdateToggleVisuals(toggle, slider, true);
+            }
         }
 
         private void UpdateToggleVisuals(VisualElement toggle, VisualElement toggleSlider, bool isOn)
