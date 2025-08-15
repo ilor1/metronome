@@ -20,7 +20,7 @@ namespace UI.Main
         // Texts
         private const string TITLE = "Metronome";
 
-        private const string METRONOME = "<b>METRONOME</b>";
+        private const string METRONOME = "<b>METRONOME by ilori</b>";
         private const string BEATS_PER_MINUTE = "beats/min";
         private const string METRONOME_TOGGLE = "Toggle metronome";
         private const string ALTERNATE_SIDES = "Alternate left/right";
@@ -78,12 +78,6 @@ namespace UI.Main
                 root.styleSheets.Add(styleSheet);
             }
 
-            // var header = Create(HEADER);
-            // var title = Create<Label>(TITLE);
-            // title.text = TITLE;
-            // header.Add(title);
-            // root.Add(header);
-
             var content = Create<ScrollView>(CONTENT);
             root.Add(content);
 
@@ -129,9 +123,20 @@ namespace UI.Main
             content.Add(quitButton);
 
             // Credits
+            
+            // ilori
+            var supportCreator = Create<Label>("credits");
+            supportCreator.text = "If you wish to support me, you can do so at <b><color=white>ko-fi.com/ilori</color></b>";
+            content.Add(supportCreator);
+            supportCreator.RegisterCallback<ClickEvent>(evt =>
+            {
+                Application.OpenURL("https://ko-fi.com/ilori");
+            });
+
+            // intiface
             var intifaceCredits = Create<Label>("credits");
             intifaceCredits.text =
-                "Special thanks to\n<b><color=white>Intiface\u00ae Central</color></b> by <b><color=white>Nonpolynomial</color></b>\nfor the haptics support.";
+                "Special thanks to <b><color=white>Intiface\u00ae Central</color></b> by <b><color=white>Nonpolynomial</color></b> for the haptics support.";
             content.Add(intifaceCredits);
         }
 
@@ -198,7 +203,7 @@ namespace UI.Main
             container.Add(slider);
             return container;
         }
-        
+
         private VisualElement CreateMetronomeVolumeSlider()
         {
             var container = Create(SLIDER_CONTAINER);
@@ -223,7 +228,7 @@ namespace UI.Main
             container.Add(slider);
             return container;
         }
-        
+
         private VisualElement CreateBinauralsVolumeSlider()
         {
             var container = Create(SLIDER_CONTAINER);
@@ -254,7 +259,7 @@ namespace UI.Main
             var container = Create(SLIDER_CONTAINER);
             var label = Create<Label>();
             label.text = $"Base frequency 100Hz";
-        
+
             var slider = Create<Slider>();
             slider.lowValue = 1;
             slider.highValue = 250;
@@ -268,18 +273,18 @@ namespace UI.Main
                 slider.value = 100;
                 _binaurals.baseFrequency = 100;
             }
-        
+
             container.Add(label);
             container.Add(slider);
             return container;
         }
-        
+
         private VisualElement CreateBeatFrequencySlider()
         {
             var container = Create(SLIDER_CONTAINER);
             var label = Create<Label>();
             label.text = $"Beat frequency 5Hz";
-        
+
             var slider = Create<Slider>();
             slider.lowValue = 1;
             slider.highValue = 30;
@@ -293,7 +298,7 @@ namespace UI.Main
                 slider.value = 5;
                 _binaurals.beatFrequency = 5;
             }
-        
+
             container.Add(label);
             container.Add(slider);
             return container;
@@ -482,7 +487,7 @@ namespace UI.Main
                         {
                             content.Remove(_metronomeVolumeSlider);
                         }
-                        
+
                         if (content.Contains(_bpmSlider))
                         {
                             content.Remove(_bpmSlider);
@@ -553,7 +558,7 @@ namespace UI.Main
                         {
                             content.Remove(_beatFrequency);
                         }
-                        
+
                         if (content.Contains(_baseFrequency))
                         {
                             content.Remove(_baseFrequency);

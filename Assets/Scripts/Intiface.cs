@@ -1,12 +1,7 @@
-// Starts up a Buttplug Server, creates a client, connects to it, and has that
-// client run a device scan. All output goes to the Unity Debug log.
-//
-// This is just a generic behavior, so you can attach it to any active object in
-// your scene and it'll run on scene load.
+// Starts up a Buttplug Server, creates a client, connects to it, and has that client run a device scan.
 
 using System;
 using Buttplug.Client;
-using Buttplug.Client.Connectors.WebsocketConnector;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -91,7 +86,7 @@ public class Intiface : MonoBehaviour
             device.RotateAsync(speed, true);
         }
     }
-    
+
     private void AddDevice(object sender, DeviceAddedEventArgs e)
     {
         Log($"Device {e.Device.Name} Connected!");

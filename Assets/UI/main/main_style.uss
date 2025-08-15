@@ -42,6 +42,7 @@
 }
 
 .credits {
+    white-space: normal;
     -unity-text-align: middle-center;
     font-size: 10;
 }

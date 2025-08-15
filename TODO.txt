@@ -1,0 +1,3 @@
+Fix the noise on binaurals
+Add a few different haptic patterns (buttons)
+Add option for haptic baseline to come from binaurals
